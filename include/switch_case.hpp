@@ -16,9 +16,10 @@ template<class T>
 class Switch{
 public:
 	Switch(T t,std::initializer_list<Case<T>> list) {
-		for each (Case<T> var in list)
+		T type = t;
+		for(Case<T> var : list)
 		{
-			if (t != var.Type || !var.Callback) continue;
+			if (type != var.Type || !var.Callback) continue;
 			var.Callback();
 		}
 	}

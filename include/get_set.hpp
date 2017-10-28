@@ -11,8 +11,8 @@ class Set {
 public:
 	Set(std::function<void(const T&)>& set) :m_set(set) {}
 	Set(std::function<void(const T&)>&& set) :m_set(set) {}
-	void operator=(const T& v) { m_set(v); }
-	void operator=(const T&& v) { m_set(v); }
+	void operator=(const T& v) {  this->m_set(v); }
+	void operator=(const T&& v) {  this->m_set(v); }
 protected:
 	Set(const Set&) = delete;
 	std::function<void(const T&)> m_set;
@@ -23,9 +23,9 @@ class Get {
 public:
 	Get(std::function<T()>& get) :m_get(get) {}
 	Get(std::function<T()>&& get) :m_get(get) {}
-	T val() { return m_get(); }
-	operator T() { return m_get(); }
-	std::string toString() { return std::to_string(m_get()); }
+	T val() { return  this->m_get(); }
+	operator T() { return  this->m_get(); }
+	std::string toString() { return std::to_string(this->m_get()); }
 protected:
 	Get(const Get&) {}
 	std::function<T()> m_get;
@@ -34,9 +34,9 @@ template<>
 class Get <std::string>{
 public:
 	Get(std::function<std::string()> get) :m_get(get) {}
-	std::string val() { return m_get(); }
-	operator std::string() { return m_get(); }
-	std::string toString() { return m_get(); }
+	std::string val() { return  this->m_get(); }
+	operator std::string() { return  this->m_get(); }
+	std::string toString() { return  this->m_get(); }
 protected:
 	Get(const Get&) {}
 	std::function<const std::string()> m_get;
@@ -54,8 +54,8 @@ private:
 template<class T>
 class GetSet :public Set<T>, public Get<T> {
 public:
-	void operator=(const T& v) { m_set(v); }
-	void operator=(const T&& v) { m_set(v); }
+	void operator=(const T& v) {  this->m_set(v); }
+	void operator=(const T&& v) {  this->m_set(v); }
 	GetSet(std::function<T()> get, std::function<void(const T&)> set) :Get<T>(get), Set<T>(set) {}
 	GetSet(std::function<void(const T&)> set, std::function<T()> get) :Get<T>(get), Set<T>(set) {}
 };
@@ -63,8 +63,8 @@ public:
 template<class T>
 class RefGetSet :public Set<T>, public RefGet<T> {
 public:
-	void operator=(const T& v) { m_set(v); }
-	void operator=(const T&& v) { m_set(v); }
+	void operator=(const T& v) {  this->m_set(v); }
+	void operator=(const T&& v) { this->m_set(v); }
 	RefGetSet(std::function<T&()> get, std::function<void(const T&)> set) :RefGet<T>(get), Set<T>(set) {}
 	RefGetSet(std::function<void(const T&)> set, std::function<T&()> get) :RefGet<T>(get), Set<T>(set) {}
 };

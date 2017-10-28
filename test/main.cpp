@@ -156,6 +156,8 @@ private:
 	type& t= t_get.mVAL; \
 	std::cout << "&mVAL: "<< (void*)&t << " t: "<< t  <<std::endl; \
 }
+
+/*
 #include <vector>
 #include <initializer_list>
 class Test {
@@ -215,7 +217,7 @@ public:
 	//	//assert(m_testI == 1);
 	//	std::cout<<"m_testI == " << TEST_I << std::endl;
 	//	const int& m_i_ref = TEST_I;
-	//	//*m_i_ref = 100;
+	//	// *m_i_ref = 100;
 	//	std::cout<<"m_i_ref == " << TEST_I << std::endl
 	//	<<"&TEST_I\t" << &m_i_ref << std::endl
 	//	<<"m_testI\t" << &m_testI << std::endl;
@@ -234,6 +236,7 @@ public:
 	//	
 	//}
 };
+*/
 
 int main(){
 	MyTestSet(short, 10);
@@ -270,7 +273,7 @@ int main(){
 	MyTestRefGetSet(double, 10);
 	MyTestRefGetSet(bool, true);
 	MyTestRefGetSet(std::string, "hello");
-
+/*
 	FunCallCount fc;
 	fc.m_count = 1000;
 	std::cout << "create fc" << std::endl;

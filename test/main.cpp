@@ -11,6 +11,10 @@ struct TestType {
 };
 class FunCallCount{
 public:
+	FunCallCount(const FunCallCount& f){
+		m_count = f.m_count;
+		
+	}
 	FunCallCount(FunCallCount& f) {
 		m_count = f.m_count + 1;
 		outStr += m_count;
@@ -157,7 +161,7 @@ private:
 	std::cout << "&mVAL: "<< (void*)&t << " t: "<< t  <<std::endl; \
 }
 
-/*
+
 #include <vector>
 #include <initializer_list>
 class Test {
@@ -187,18 +191,15 @@ public:
 			SetRef(std::vector<int>){
 				m_IDs = value;
 			}),
-		m_testFCallCount()
-		,setCALL_COUNT(
+		//m_testFCallCount(),
+		setCALL_COUNT(
 			SetRef(FunCallCount) {
-					m_testFCallCount = value;
-			})
-
-		, getCALL_COUNT(
-			GetVal{
-				return m_testFCallCount;
-			}
-		)
-		, getRefID(GetRef(int){return m_id; })
+					this->m_testFCallCount = value;
+			}),
+		getCALL_COUNT(GetVal{
+				return this->m_testFCallCount;
+			}),
+		getRefID(GetRef(int){return this->m_id; })
 		//, getRefCALL_COUNT(
 		//	GetRef(FunCallCount) {
 		//		return m_testFCallCount;
@@ -236,7 +237,7 @@ public:
 	//	
 	//}
 };
-*/
+
 
 int main(){
 	MyTestSet(short, 10);
@@ -273,7 +274,7 @@ int main(){
 	MyTestRefGetSet(double, 10);
 	MyTestRefGetSet(bool, true);
 	MyTestRefGetSet(std::string, "hello");
-/*
+
 	FunCallCount fc;
 	fc.m_count = 1000;
 	std::cout << "create fc" << std::endl;

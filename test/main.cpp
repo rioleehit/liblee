@@ -156,7 +156,8 @@ private:
 	type& t= t_get.mVAL; \
 	std::cout << "&mVAL: "<< (void*)&t << " t: "<< t  <<std::endl; \
 }
-
+#include <vector>
+#include <initializer_list>
 class Test {
 
 	//int m_id;
@@ -165,18 +166,25 @@ class Test {
 
 	int m_id;
 	FunCallCount m_testFCallCount;
+	std::vector<int> m_IDs;
 public:
 	
 	//GetSet<int> ID;
 	//GetSet<std::string> Name;
 	//GetSet<TestType> TValue;
 	//GetSet<int> TEST_I;
-	
+	RefGetSet<std::vector<int>> IDs;
 	RefGet<int> getRefID;
 	Set<FunCallCount> setCALL_COUNT;
 	Get<FunCallCount> getCALL_COUNT;
 	//RefGet<FunCallCount> getRefCALL_COUNT;
 	Test():
+		IDs(GetRef(std::vector<int>) {
+				return m_IDs;
+			},
+			SetRef(std::vector<int>){
+				m_IDs = value;
+			}),
 		m_testFCallCount()
 		,setCALL_COUNT(
 			SetRef(FunCallCount) {
@@ -272,6 +280,9 @@ int main(){
 	//{ TestSet<FunCallCount> t_set; t_set.mVAL = (fc); std::cout << (std::string)t_set.m_val << t_set.m_val.m_count << std::endl; }
 	//MyTestSet(FunCallCount, fc);
 
+	t.IDs = { 1,2,3,4,5 };
+	auto refVec = t.IDs.ref();
+	
 
 	//Test t;
 	////t.test();

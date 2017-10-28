@@ -61,12 +61,12 @@ public:
 };
 
 template<class T>
-class RefGetSet :public Set<T>, public Get<T&> {
+class RefGetSet :public Set<T>, public RefGet<T> {
 public:
 	void operator=(const T& v) { m_set(v); }
 	void operator=(const T&& v) { m_set(v); }
-	RefGetSet(std::function<T&()> get, std::function<void(const T&)> set) :Get<T&>(get), Set<T>(set) {}
-	RefGetSet(std::function<void(const T&)> set, std::function<T&()> get) :Get<T&>(get), Set<T>(set) {}
+	RefGetSet(std::function<T&()> get, std::function<void(const T&)> set) :RefGet<T>(get), Set<T>(set) {}
+	RefGetSet(std::function<void(const T&)> set, std::function<T&()> get) :RefGet<T>(get), Set<T>(set) {}
 };
 
 };

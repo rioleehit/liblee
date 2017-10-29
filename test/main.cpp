@@ -291,7 +291,7 @@ int main(){
 	auto refVec = t.IDs.ref();
 	
 
-	std::ifstream is("D:/workspace/liblee/build/data.xml", std::ifstream::binary);
+	std::ifstream is("data.xml", std::ifstream::binary);
 	if (is) {
 		// get length of file:
 		is.seekg(0, is.end);
@@ -311,7 +311,7 @@ int main(){
 
 			std::wstring result = lee::to_wchar_t(std::string(buffer));
 
-			n.parse(lee::CvtString(std::string(buffer)));
+			n.parse(lee::CvtString((buffer)));
 			std::cout << "all characters read successfully.";
 		}
 		else

@@ -1,5 +1,7 @@
 #include "get_set.hpp"
 #include "switch_case.hpp"
+#include "parser.hpp"
+#include "util.hpp"
 
 #include <iostream>
 #include <string>
@@ -238,7 +240,8 @@ public:
 	//}
 };
 
-
+#include <fstream>
+#include <sstream>
 int main(){
 	MyTestSet(short, 10);
 	MyTestSet(int, 10);
@@ -287,6 +290,36 @@ int main(){
 	t.IDs = { 1,2,3,4,5 };
 	auto refVec = t.IDs.ref();
 	
+
+	std::ifstream is("D:/workspace/liblee/build/data.xml", std::ifstream::binary);
+	if (is) {
+		// get length of file:
+		is.seekg(0, is.end);
+		int length = is.tellg();
+		is.seekg(0, is.beg);
+
+		std::vector<char> buff(length + 1);
+		char * buffer = &buff[0];
+
+		std::cout << "Reading " << length << " characters... ";
+		// read data as a block:
+		is.read(buffer, length);
+
+		if (is){
+			//lee::for_each_tag(std::string(buffer),);
+			lee::DataNode n;
+
+			std::wstring result = lee::to_wchar_t(std::string(buffer));
+
+			n.parse(lee::CvtString(std::string(buffer)));
+			std::cout << "all characters read successfully.";
+		}
+		else
+			std::cout << "error: only " << is.gcount() << " could be read";
+		is.close();
+
+		// ...buffer contains the entire file...
+	}
 
 	//Test t;
 	////t.test();

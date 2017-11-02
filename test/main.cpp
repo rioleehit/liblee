@@ -291,7 +291,7 @@ int main(){
 	auto refVec = t.IDs.ref();
 	
 
-	std::ifstream is("data.xml", std::ifstream::binary);
+	std::ifstream is("../test/data.xml", std::ifstream::binary);
 	if (is) {
 		// get length of file:
 		is.seekg(0, is.end);
@@ -307,7 +307,7 @@ int main(){
 
 		if (is){
 			//lee::for_each_tag(std::string(buffer),);
-			lee::DataNode n;
+			lee::BaseNode n;
 
 			std::wstring result = lee::to_wchar_t(std::string(buffer));
 

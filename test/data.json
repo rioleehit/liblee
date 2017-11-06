@@ -1,0 +1,56 @@
+{
+"obj1": {
+    "eee":10,
+	"empty"{},
+	"eeee"{"key",false},
+    "o1A1": [
+      "index0",
+      "index1",
+      "index2",
+      "index3"
+    ],
+    "o1A2": [
+      "index0",
+      "index1"
+    ]
+  },
+  "1":{
+    "eee":10,
+	"o2":{}
+  },
+  "arr":[
+  {}
+  ],
+  "UserSettingsRecorded": false,
+  "Flags": "9",
+  "ProxyServer": null, 
+  "BypassList": "*.local",
+  "PacUrl": null,
+  
+  "o2": {
+    "sites": {
+      "site": [
+        null,
+        "empty",
+        false,
+        100,
+        10.5,
+        {
+          "id": "1",
+          "name": "菜鸟教程",
+          "url": "www.runoob.com"
+        },
+        {
+          "id": "2",
+          "name": "菜鸟工具",
+          "url": "c.runoob.com"
+        },
+        {
+          "id": "3",
+          "name": "Google",
+          "url": "www.google.com"
+        }
+      ]
+    }
+  }
+}

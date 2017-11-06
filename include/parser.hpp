@@ -93,59 +93,138 @@ enum ObjType {
 	STRING,
 	OBJECT,
 	ARRAY,
+	NIL,
 	unkown
 };
 
 class DataJsonNode {
 public:
-	bool parse(std::wstring& source) {
-		try {
-			std::wregex regObjType(L"\\s+(.)(.*)");
-			std::wstring&& stype = std::regex_replace(source, regObjType, L"$1", std::regex_constants::format_no_copy);
-			std::wstring&& snext = std::regex_replace(source, regObjType, L"$1", std::regex_constants::format_no_copy);
-			
-			this->type = ObjType::unkown;
-			DataJsonNode* pChild = nullptr;
-			if (stype == L"[") {
-				this->type = ObjType::ARRAY;
-				int index = 0;
-				while (pChild->parse(snext)) {
-					childs.push_back({ std::to_wstring(index),std::unique_ptr<DataJsonNode>(pChild) });
-				}
+	bool parseObjectFrom(std::wstring& source) {
+		source = std::regex_replace(source, std::wregex(L"\\s*(\\S.*)"), L"$1", std::regex_constants::format_no_copy);
+		std::wsmatch sm;
+		std::wregex re(L"\"(.+?)\"\\s*:\\s*");
+		while (std::regex_search(source.cbegin(), source.cend(), sm, re))
+		{
+			std::wstring&& s = std::regex_replace((std::wstring)sm[0], re, L"$1", std::regex_constants::format_no_copy);			
+			source = sm.suffix().str();
+			std::unique_ptr<DataJsonNode>pChild(new DataJsonNode());
+			pChild->name = s;
+			wchar_t first = *source.c_str();
+
+			bool success = 
+				first == L'{' ? pChild->parseObjectFrom(source) :
+				first == L'[' ? pChild->parseArrayFrom(source) : false;
+			std::wsmatch sm;			;
+			if (!success && std::regex_search(source, sm, std::wregex(L"(\\S*?)\\s*?[\\,\\}]")))
+			{
+				std::wstring&& sub = sm[0];
+
+				pChild->parseBaseTypeFrom(sub);
+				//source = *(source.cend()--);
+				source += sm.suffix();
 			}
-			else if (stype == L"{") {
-				this->type = ObjType::OBJECT;
 
-			}
-			else if (stype == L"\"") {
-
-			}
-
-			std::vector<DataJsonNode*> tmpPrePointer;
-			tmpPrePointer.push_back(this);
-			DataJsonNode* curent = this;
-			int index = 0;
-
-
-
-			for_each_tag(source, L"{\\s*?\"(\\S*?)\".*?=.*?\"", [&](std::wstring& ref)->bool {
-				bool isSingle = curent->is_single;
-				if (isSingle || curent->isEnd(ref)) {
-					tmpPrePointer.pop_back();
-					--index;
-					curent = tmpPrePointer[index];
-					if (!isSingle || curent->isEnd(ref)) { return true; }
-				}
-				curent = curent->createChild(ref);
-				tmpPrePointer.push_back(curent);
-				++index;
-				return true;
-			});
-		}
-		catch (...) {
-			return false;
+			this->childs.push_back({ s,std::move(pChild)});
 		}
 		return true;
+	}
+	bool parseArrayFrom(std::wstring& source) {
+
+		std::wregex reEach(L"\\s*(\\S)(.*)");
+		std::wregex reBase(L"\\s*(\\S*?)\\s*([,\\]].*)");
+		source = std::regex_replace(source, std::wregex(L"\\s*\\[?(.*)"), L"$1", std::regex_constants::format_no_copy);
+		this->type = ObjType::ARRAY;
+		int index = 0;
+		bool loop = true;
+		while (loop) {
+			std::wstring&& next = std::regex_replace(source, reEach, L"$1", std::regex_constants::format_no_copy);
+			source = std::regex_replace(source, reEach, L"$1$2", std::regex_constants::format_no_copy);
+			
+			std::unique_ptr<DataJsonNode> pChild(new DataJsonNode());
+			switch (*next.c_str())
+			{
+			case L']':source = (source.c_str() + 1); loop = false;
+				break;
+			case L',':source = (source.c_str() + 1); continue;
+				break;
+			case L'[':pChild->parseArrayFrom(source);
+					  this->childs.push_back({ std::to_wstring(index),std::move(pChild) });
+					  ++index;
+				break;
+			case L'{':pChild->parseObjectFrom(source);
+					  this->childs.push_back({ std::to_wstring(index),std::move(pChild) });
+					  ++index;
+				break;			
+			default:
+					{
+						std::wsmatch sm;
+						if (std::regex_search(source, sm, reBase))
+						{
+							std::wstring&& searchStr = sm[0];
+							std::wstring&& s = std::regex_replace(searchStr, reBase, L"$1", std::regex_constants::format_no_copy);
+							source = std::regex_replace(searchStr, reBase, L"$2", std::regex_constants::format_no_copy);
+							pChild->parseBaseTypeFrom(s);
+							this->childs.push_back({ std::to_wstring(index),std::move(pChild) });
+							++index;
+						}
+					}break;
+			}
+		}
+		return true;
+	}
+	bool parseBaseTypeFrom(std::wstring& source) {
+		wchar_t first = *source.c_str();
+		switch (first) {
+			case L'\"':
+				this->type = ObjType::STRING;
+				this->value = source.substr(1, source.length() - 2);
+				break;
+			case L'n':
+			case L'N':
+				this->type = ObjType::NIL;
+				break;
+			case L't':
+			case L'T':
+				this->value = L"true";
+				this->type = ObjType::BOOL;
+				break;
+			case L'f':
+			case L'F':
+				this->value = L"false";
+				this->type = ObjType::BOOL; 
+				break;
+			default:
+				this->type = source.find(L'.') >= 0 ? ObjType::FLOAT : ObjType::INT;
+				this->value = source;
+		}
+		return true;
+	}
+	static DataJsonNode* parse(std::wstring& source) {
+		DataJsonNode* result = new DataJsonNode();
+		try {
+			std::wregex regObjType(L"\\s*(\\S.*)");
+			std::wstring&& snext = std::regex_replace(source, regObjType, L"$1", std::regex_constants::format_no_copy);
+			wchar_t stype = *snext.c_str();
+			
+			result->type = ObjType::unkown;
+			DataJsonNode* pChild = new DataJsonNode();
+			std::function<bool(std::wstring&)> parser;
+			switch (stype)
+			{
+			case L'[':
+				parser = std::bind(&(DataJsonNode::parseArrayFrom), result, std::placeholders::_1);
+				break;
+			case L'{':
+				parser = std::bind(&(DataJsonNode::parseObjectFrom), result, std::placeholders::_1);
+				break;
+			default:
+				parser = std::bind(&(DataJsonNode::parseBaseTypeFrom), result, std::placeholders::_1);
+				break;
+			}
+			parser(snext);
+		}
+		catch (...) { }
+		return result;
 	}
 
 	bool isEnd(std::wstring& s) {
@@ -167,7 +246,7 @@ public:
 			std::wstring&& key = std::regex_replace(ref, e, L"$1", std::regex_constants::format_no_copy);
 			std::wstring&& val = std::regex_replace(ref, e, L"$2", std::regex_constants::format_no_copy);
 
-			this->values[key] = val;
+			//this->values[key] = val;
 			return true;
 		});
 	}
@@ -178,10 +257,12 @@ public:
 		return pChild;
 	}
 	bool is_single = false;
+	DataJsonNode():length(0),type(ObjType::unkown),name(),value(),childs(){}
 protected:
 	ObjType type;
 	std::wstring name;
-	std::map<std::wstring, std::wstring> values;
+	std::wstring value;
+	int length;
 	std::vector<std::pair<std::wstring, std::unique_ptr<DataJsonNode>>> childs;
 };
 class DataXmlNode {

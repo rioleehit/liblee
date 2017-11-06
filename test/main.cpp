@@ -289,7 +289,35 @@ int main(){
 
 	t.IDs = { 1,2,3,4,5 };
 	auto refVec = t.IDs.ref();
-	
+	std::ifstream fsJson("../test/data.json", std::ifstream::binary);
+	if (fsJson) {
+		// get length of file:
+		fsJson.seekg(0, fsJson.end);
+		int length = fsJson.tellg();
+		fsJson.seekg(0, fsJson.beg);
+
+		std::vector<char> buff(length + 1);
+		char * buffer = &buff[0];
+
+		std::cout << "Reading " << length << " characters... ";
+		// read data as a block:
+		fsJson.read(buffer, length);
+
+		if (fsJson) {
+			//lee::for_each_tag(std::string(buffer),);
+			lee::DataJsonNode n;
+
+			std::wstring result = lee::to_wchar_t(std::string(buffer));
+
+			n.parse(lee::CvtString((buffer)));
+			std::cout << "all characters read successfully.";
+		}
+		else
+			std::cout << "error: only " << fsJson.gcount() << " could be read";
+		fsJson.close();
+
+		// ...buffer contains the entire file...
+	}
 
 	std::ifstream is("../test/data.xml", std::ifstream::binary);
 	if (is) {

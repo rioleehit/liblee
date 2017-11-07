@@ -305,11 +305,11 @@ int main(){
 
 		if (fsJson) {
 			//lee::for_each_tag(std::string(buffer),);
-			lee::DataJsonNode n;
 
 			std::wstring result = lee::to_wchar_t(std::string(buffer));
 
-			n.parse(lee::CvtString((buffer)));
+
+			lee::DataJsonNode* n = lee::DataJsonNode::parse(lee::CvtString((buffer)));
 			std::cout << "all characters read successfully.";
 		}
 		else

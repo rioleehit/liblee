@@ -1,8 +1,8 @@
 {
 "obj1": {
     "eee":10,
-	"empty"{},
-	"eeee"{"key",false},
+	"empty":{},
+	"eeee":{"key":false},
     "o1A1": [
       "index0",
       "index1",

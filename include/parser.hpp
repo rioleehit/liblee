@@ -101,30 +101,47 @@ class DataJsonNode {
 public:
 	bool parseObjectFrom(std::wstring& source) {
 		source = std::regex_replace(source, std::wregex(L"\\s*(\\S.*)"), L"$1", std::regex_constants::format_no_copy);
+		std::wregex reFirst(L"\\{\\s*([\"\\}])?(.*)");
+		std::wstring&& sFirst = std::regex_replace(source, reFirst, L"$1", std::regex_constants::format_no_copy);
+		if (sFirst == L"}") {
+			this->type = ObjType::NIL;
+			source = std::regex_replace(source, reFirst, L"$2", std::regex_constants::format_no_copy);
+			return true;
+		}
+		this->type = ObjType::OBJECT;
 		std::wsmatch sm;
-		std::wregex re(L"\"(.+?)\"\\s*:\\s*");
-		while (std::regex_search(source.cbegin(), source.cend(), sm, re))
+		std::wregex re(L"\"(.*?)\"?\\s*:\\s*(\\S.*)");
+		std::wstring&& endStr=std::wstring(L"");
+		while (std::regex_search(source, sm, re) && (endStr!=L"}"))
 		{
-			std::wstring&& s = std::regex_replace((std::wstring)sm[0], re, L"$1", std::regex_constants::format_no_copy);			
-			source = sm.suffix().str();
+			std::wstring&& searchStr = sm[0];
 			std::unique_ptr<DataJsonNode>pChild(new DataJsonNode());
-			pChild->name = s;
+			pChild->name = std::regex_replace(searchStr, re, L"$1", std::regex_constants::format_no_copy);
+			source = std::regex_replace(searchStr, re, L"$2", std::regex_constants::format_no_copy);
 			wchar_t first = *source.c_str();
 
-			bool success = 
-				first == L'{' ? pChild->parseObjectFrom(source) :
-				first == L'[' ? pChild->parseArrayFrom(source) : false;
-			std::wsmatch sm;			;
-			if (!success && std::regex_search(source, sm, std::wregex(L"(\\S*?)\\s*?[\\,\\}]")))
+			switch (first)
 			{
-				std::wstring&& sub = sm[0];
-
+			case L'{': 
+				pChild->parseObjectFrom(source);
+				break;
+			case L'[': pChild->parseArrayFrom(source);
+				break;
+			default:
+			{
+				std::wsmatch sm;
+				std::wregex reProperty(L"(\\S*?)\\s*?([\\,\\}])\\s*(\\S.*)");
+				std::wstring&& sub = std::regex_replace(source, reProperty, L"$1", std::regex_constants::format_no_copy);
 				pChild->parseBaseTypeFrom(sub);
-				//source = *(source.cend()--);
-				source += sm.suffix();
+				source = std::move(std::regex_replace(source, reProperty, L"$2$3", std::regex_constants::format_no_copy));
 			}
+				break;
+			}
+			std::wregex reEnd(L"\\s*(\\S)\\s*(\\S.*)");
+			endStr = std::move(std::regex_replace(source, reEnd, L"$1", std::regex_constants::format_no_copy));
+			source = std::move(std::regex_replace(source, reEnd, L"$2", std::regex_constants::format_no_copy));
 
-			this->childs.push_back({ s,std::move(pChild)});
+			this->childs.push_back({ pChild->name,std::move(pChild)});
 		}
 		return true;
 	}
@@ -194,7 +211,7 @@ public:
 				this->type = ObjType::BOOL; 
 				break;
 			default:
-				this->type = source.find(L'.') >= 0 ? ObjType::FLOAT : ObjType::INT;
+				this->type = source.find(L'.') != std::string::npos ? ObjType::FLOAT : ObjType::INT;
 				this->value = source;
 		}
 		return true;

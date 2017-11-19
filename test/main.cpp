@@ -284,6 +284,7 @@ int main(){
 	Test t;
 	t.setCALL_COUNT = fc;
 	t.getRefID.ref();
+	t.IDs->push_back(10);
 	//{ TestSet<FunCallCount> t_set; t_set.mVAL = (fc); std::cout << (std::string)t_set.m_val << t_set.m_val.m_count << std::endl; }
 	//MyTestSet(FunCallCount, fc);
 

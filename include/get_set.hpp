@@ -4,8 +4,6 @@
 #include <functional>
 namespace lee{
 	
-#define T_REF const T&
-
 template<class T>
 class Set {
 public:
@@ -48,6 +46,7 @@ public:
 	RefGet(std::function<T&()> f) :Get<T&>(f) {}
 	T& ref() { return Get<T&>::val(); };
 	T& val() = delete;
+	T* operator->() {return &Get<T&>::val();}
 private:
 	RefGet(const RefGet&) {}
 };
@@ -70,7 +69,6 @@ public:
 };
 
 };
-#undef T_REF
 #define GetVal [this]()
 #define GetRef(type) [this]()->type&
 //#define SetVal(type) [this](type value)

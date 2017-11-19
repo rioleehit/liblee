@@ -169,24 +169,38 @@ private:
 class Test {
 
 	//int m_id;
-	//std::string m_name;
+	
 	//TestType m_t;
 
+	std::string m_name;
 	int m_id;
 	FunCallCount m_testFCallCount;
 	std::vector<int> m_IDs;
 public:
 	
 	//GetSet<int> ID;
-	//GetSet<std::string> Name;
+	RefGetSet<std::string> Name;
 	//GetSet<TestType> TValue;
 	//GetSet<int> TEST_I;
+	RefGetSet<int> ID;
 	RefGetSet<std::vector<int>> IDs;
 	RefGet<int> getRefID;
 	Set<FunCallCount> setCALL_COUNT;
 	Get<FunCallCount> getCALL_COUNT;
 	//RefGet<FunCallCount> getRefCALL_COUNT;
 	Test():
+		Name(GetRef(std::string) {
+				return m_name;
+			},
+			SetRef(std::string){
+				m_name = value;
+			}),
+		ID(GetRef(int) {
+				return m_id;
+			},
+			SetRef(int){
+				m_id = value;
+			}),
 		IDs(GetRef(std::vector<int>) {
 				return m_IDs;
 			},
@@ -242,7 +256,9 @@ public:
 
 #include <fstream>
 #include <sstream>
-int main(){
+
+void testGetSet() {
+
 	MyTestSet(short, 10);
 	MyTestSet(int, 10);
 	MyTestSet(float, 10.0);
@@ -290,6 +306,38 @@ int main(){
 
 	t.IDs = { 1,2,3,4,5 };
 	auto refVec = t.IDs.ref();
+}
+
+void testSwitchCase() {
+	Test t;
+
+	SWITCH_S("test")
+		CASES("hello",
+			"test",
+			"eeee") {
+			t.ID = 200;
+			t.Name = "hello";
+		}BREAK
+		CASE("test") {
+			t.ID = 300;
+			t.Name = "test";
+		}BREAK
+	END;
+	
+
+	SWITCH(int, 100)
+		CASE(100) {
+		t.ID = 200;
+	}BREAK
+		CASE(200) {
+		t.Name = "test";
+	}BREAK
+		END
+}
+int main(){
+	testGetSet();
+	testSwitchCase();
+	
 	std::ifstream fsJson("../test/data.json", std::ifstream::binary);
 	if (fsJson) {
 		// get length of file:
